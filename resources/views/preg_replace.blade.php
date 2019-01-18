@@ -6,10 +6,10 @@
     <body>
         <div class="container">
             <div class="content">
-                <p>Исходный массив:</p>
+                Исходный массив:
                 <div><pre>{{ print_r($input, true) }}</pre></div>
                 <hr>
-                <p>Результирующией массив:</p>
+                <b>Результирующией массив:</b>
                 <div><pre>{{ print_r($output, true) }}</pre></div>
             </div>
         </div>
