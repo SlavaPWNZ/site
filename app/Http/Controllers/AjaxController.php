@@ -10,8 +10,20 @@ use App\Menu;
 
 class AjaxController extends Controller
 {
-    public function main()
+    public function store(Request $request)
     {
+        $messages = [
+            'title.required'    => 'Укажите название',
+            'title.max'    => 'Название не должно быть более 255 символов',
+            'title.regex' => 'В названии разрешено использовать только цифры/латиницу/кириллицу/пробел',
+            'title.unique'      => 'Уже есть пункт меню, с таким названием',
+            'path.required'    => 'Укажите ссылку',
+            'path.max'    => 'Ссылку не должна быть более 255 символов',
+            'path.regex' => 'В ссылке разрешено использовать только цифры/латиницу/подчеркивание/дефис',
+            'path.unique'      => 'Уже есть пункт меню, с такой ссылкой',
+            'parent_id.required'    => 'Укажите id родителя',
+        ];
+
         if(isset($_POST["action"]))
         {
             if($_POST["action"] == "Load")
@@ -55,6 +67,15 @@ class AjaxController extends Controller
             }
             if($_POST["action"] == "Создать")
             {
+                $validator = \Validator::make($request->all(), [
+                    'title' => 'bail|required|max:255|regex:/^[0-9a-zA-ZА-Яа-яЁё\s]+$/u|unique:menus,title|',
+                    'path' => 'bail|required|max:255|regex:/^[0-9a-zA-Z_-]+$/|unique:menus,path',
+                    'parent_id' => 'required',
+                ],$messages);
+                if ($validator->fails())
+                {
+                    return response()->json(['errors'=>$validator->errors()->all()]);
+                }
                 $result = Menu::saveRowMenu($_POST["title"],$_POST["path"],$_POST["parent_id"]);
                 if(!empty($result))
                 {
@@ -77,6 +98,15 @@ class AjaxController extends Controller
             }
             if($_POST["action"] == "Обновить")
             {
+                $validator = \Validator::make($request->all(), [
+                    'title' => 'bail|required|max:255|regex:/^[0-9a-zA-ZА-Яа-яЁё\s]+$/|unique:menus,title|',
+                    'path' => 'bail|required|max:255|regex:/^[0-9a-zA-Z_-]+$/|unique:menus,path',
+                    'parent_id' => 'required',
+                ],$messages);
+                if ($validator->fails())
+                {
+                    return response()->json(['errors'=>$validator->errors()->all()]);
+                }
                 $result = Menu::updateRowMenu($_POST["id"],$_POST["title"],$_POST["path"],$_POST["parent_id"]);
                 if(!empty($result))
                 {

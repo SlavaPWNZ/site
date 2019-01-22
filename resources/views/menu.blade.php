@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="_token" content="{{csrf_token()}}" />
     <title>Menu</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
@@ -57,6 +58,7 @@
                 </select>
                 <br />
             </div>
+            <div class="alert alert-danger" style="display:none"></div>
             <div class="modal-footer">
                 <input type="hidden" name="menu_id" id="menu_id" />
                 <input type="submit" name="action" id="action" class="btn btn-success" value="Создать"/>
@@ -71,6 +73,11 @@
     //обработчик
     jQuery(document).ready(function () {
         jQuery("#jquery-accordion-menu").jqueryAccordionMenu();
+        jQuery.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+            }
+        });
 
         fetchUser();
 
@@ -92,25 +99,36 @@
             $('#title').val('');
             $('#path').val('');
             $('#parent_id').val(0);
+            $('.alert-danger').html('');
+            $('.alert-danger').css('display','none');
         });
 
 
         $('#action').click(function(){
+            $('.alert-danger').html('');
+            $('.alert-danger').css('display','none');
             var title = $('#title').val();
             var path = $('#path').val();
             var parent_id = $('#parent_id').val();
             var id = $('#menu_id').val();
             var action = $('#action').val();
-            if(title != '' && path != '' && parent_id != '' && /^[0-9a-zA-ZА-Яа-яЁё\s]+$/.test(title) && /^[0-9a-zA-Z]+$/.test(path))
+            if(1)
             {
                 $.ajax({
                     url : "action",
                     method:"POST",
                     data:{action:action,title:title, path:path, id:id, parent_id:parent_id},
                     success:function(data){
-                        alert(data);
-                        $('#customerModal').modal('hide');
-                        fetchUser();
+                        if (data.errors){
+                            jQuery.each(data.errors, function(key, value){
+                                jQuery('.alert-danger').show();
+                                jQuery('.alert-danger').append('<p>'+value+'</p>');
+                            });
+                        }else{
+                            alert(data);
+                            $('#customerModal').modal('hide');
+                            fetchUser();
+                        }
                     }
                 });
             }
