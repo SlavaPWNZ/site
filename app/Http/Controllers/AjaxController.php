@@ -53,8 +53,6 @@ class AjaxController extends Controller
 
                 echo $output;
             }
-
-
             if($_POST["action"] == "Создать")
             {
                 $result = Menu::saveRowMenu($_POST["title"],$_POST["path"],$_POST["parent_id"]);
@@ -62,61 +60,48 @@ class AjaxController extends Controller
                 {
                     echo 'Данные успешно записаны';
                 }
+                else{
+                    echo 'Ошибка!';
+                }
             }
-
-
             if($_POST["action"] == "Select")
             {
-                $output = array();
-                $statement = $connection->prepare(
-                    "SELECT * FROM clients 
-   WHERE id = '".$_POST["id"]."' 
-   LIMIT 1"
-                );
-                $statement->execute();
-                $result = $statement->fetchAll();
+                $result = Menu::getRowMenu($_POST["id"]);
                 foreach($result as $row)
                 {
-                    $output["firstname"] = $row["firstname"];
-                    $output["lastname"] = $row["lastname"];
+                    $output["title"] = $row["title"];
+                    $output["path"] = $row["path"];
+                    $output["parent_id"] = $row["parent_id"];
                 }
                 echo json_encode($output);
             }
             if($_POST["action"] == "Обновить")
             {
-                $statement = $connection->prepare(
-                    "UPDATE clients 
-   SET firstname = :firstname, lastname = :lastname 
-   WHERE id = :id
-   "
-                );
-                $result = $statement->execute(
-                    array(
-                        ':firstname' => $_POST["firstName"],
-                        ':lastname' => $_POST["lastName"],
-                        ':id'   => $_POST["id"]
-                    )
-                );
+                $result = Menu::updateRowMenu($_POST["id"],$_POST["title"],$_POST["path"],$_POST["parent_id"]);
                 if(!empty($result))
                 {
-                    echo 'Данные обновлены';
+                    echo 'Данные успешно обновлены';
+                }
+                else{
+                    echo 'Ошибка!';
                 }
             }
-//Удаляем из базы запись
             if($_POST["action"] == "Delete")
             {
-                $statement = $connection->prepare(
-                    "DELETE FROM clients WHERE id = :id"
-                );
-                $result = $statement->execute(
-                    array(
-                        ':id' => $_POST["id"]
-                    )
-                );
-                if(!empty($result))
-                {
-                    echo 'Данные удалены';
+                if ($_POST["id"]==1 || $_POST["id"]==12){
+                    echo 'Не стоит удалять главную страницу и страницу первого задания... =)';
                 }
+                else{
+                    $result = Menu::deleteRow($_POST["id"]);
+                    if(!empty($result))
+                    {
+                        echo 'Данные удалены';
+                    }
+                    else{
+                        echo 'Ошибка!';
+                    }
+                }
+
             }
         }
     }

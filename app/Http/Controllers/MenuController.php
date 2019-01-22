@@ -43,6 +43,5 @@ class MenuController extends Controller
         $menu_html=$this->build_tree($categories);
         $parentsID = Menu::getParentsID();
         return view('menu', ['menu_html' => $menu_html, 'parentsID' => $parentsID,]);
-
     }
 }

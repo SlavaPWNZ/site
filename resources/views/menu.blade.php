@@ -67,7 +67,6 @@
 </div>
 
 
-
 <script type="text/javascript">
     //обработчик
     jQuery(document).ready(function () {
@@ -122,50 +121,49 @@
         });
 
 
-
-        //JQuery код для обновления записи без перезагрузки страницы
         $(document).on('click', '.update', function(){
-            var id = $(this).attr("id"); //определяем id записи для дальнейшего обновления данных
-            var action = "Select";   //Определяем действие Select
+            var id = $(this).attr("id");
+            var action = "Select";
             $.ajax({
-                url:"action",   //Обращаемся к "action.php"
-                method:"POST",    //Для отправки используем POST метод
-                data:{id:id, action:action},//Посылаем данные на сервер
-                dataType:"json",   //Определяем тип пересылаемых данных в формате JSON
+                url:"action",
+                method:"POST",
+                data:{id:id, action:action},
+                dataType:"json",
                 success:function(data){
-                    $('#customerModal').modal('show');   //Отображаем модальное окно для обновления записей
-                    $('.modal-title').text("Обновить записи"); //Заголовок модального окна
-                    $('#action').val("Обновить");     //Название кнопки окна
+                    $('#customerModal').modal('show');
+                    $('.modal-title').text("Обновить записи");
+                    $('#action').val("Обновить");
                     $('#menu_id').val(id);
-                    $('#firstname').val(data.firstname);
-                    $('#lastname').val(data.lastname);
+                    $('#title').val(data.title);
+                    $('#path').val(data.path);
+                    $('#parent_id').val(data.parent_id);
                 }
             });
         });
-        //JQuery код для удаления записи без перезагрузки страницы
+
+
         $(document).on('click', '.delete', function(){
-            var id = $(this).attr("id"); //определяем id записи для дальнейшего удаления
-            if(confirm("Вы уверены что хотите удалить эти данные?")) //Проверка
+            var id = $(this).attr("id");
+            if(confirm("Вы уверены что хотите удалить пункт меню и все его дочерние пункты?"))
             {
-                var action = "Delete"; //Определяем действие
+                var action = "Delete";
                 $.ajax({
-                    url:"action.php",    //Обращаемся к "action.php"
-                    method:"POST",     //Методом POST
-                    data:{id:id, action:action}, //пересылаем данные на сервер
+                    url:"action",
+                    method:"POST",
+                    data:{id:id, action:action},
                     success:function(data)
                     {
-                        fetchUser();    // при успешном выполнении обновляем список абонентов
-                        alert(data);    //информационное сообщение о успешном удалении
+                        fetchUser();
+                        alert(data);
                     }
                 })
             }
-            else  //Если нажали отмена в вопросе о удалении записи
+            else
             {
-                return false; //ничего не делаем
+                return false;
             }
         });
     });
-
 </script>
 
 
