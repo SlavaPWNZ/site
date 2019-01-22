@@ -7,9 +7,38 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 
 use App\Menu;
+use App\Http\Controllers\MenuController;
 
 class AjaxController extends Controller
 {
+    public function build_tree($categories){
+        if (isset($categories[0])){
+            $tree = '<ul id="demo-list" type="circle">';
+            foreach($categories[0] as $cat){
+                $tree .= '<li><a href="'.$cat['path'].'">'.$cat['title'].'</a>';
+                $tree .=  $this->build_tree_childrens($categories,$cat['id']);
+                $tree .= '</li>';
+            }
+            $tree .= '</ul>';
+            return $tree;
+        }
+        return null;
+    }
+
+    public function build_tree_childrens($categories,$parent_id){
+        if(is_array($categories) and isset($categories[$parent_id])){
+            $tree = '<ul class="submenu">';
+            foreach($categories[$parent_id] as $cat){
+                $tree .= '<li><a href="'.$cat['path'].'">'.$cat['title'].'</a>';
+                $tree .=  $this->build_tree_childrens($categories,$cat['id']);
+                $tree .= '</li>';
+            }
+            $tree .= '</ul>';
+        }
+        else return null;
+        return $tree;
+    }
+
     public function store(Request $request)
     {
         $messages = [
@@ -28,10 +57,22 @@ class AjaxController extends Controller
         {
             if($_POST["action"] == "Load")
             {
+                $categories = Menu::makeMenu();
+                $menu_html=$this->build_tree($categories);
+
                 $result = Menu::getMenu();
+                $output = '';
+                $output .= '<div class="container box">
+                            <h1 align="center">Меню</h1>
+                            <br />
+                            <div align="right">
+                                <button type="button" id="modal_button" class="btn btn-info">Создать пункт меню</button>
+                            </div>
+                            <br />
+                            <div id="result" class="table-responsive">';
+
                 if(count($result))
                 {
-                    $output = '';
                     $output .= '
                        <table class="table table-bordered">
                         <tr>
@@ -63,7 +104,11 @@ class AjaxController extends Controller
                     $output= '<h3>Данных нет</h3>';
                 }
 
-                echo $output;
+                $output .='</div></div>';
+
+                $data[0]=$menu_html;
+                $data[1]=$output;
+                return $data;
             }
             if($_POST["action"] == "Создать")
             {
