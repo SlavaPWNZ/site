@@ -35,15 +35,15 @@ class Menu extends Model
         return $result;
     }
 
-    public static function getParentsID(){
+    public static function getIDs(){
         $result=[];
         $i = 0;
-        $rows= Menu::select('parent_id')
-            ->orderBy('parent_id', 'asc')
+        $rows= Menu::select('id')
+            ->orderBy('id', 'asc')
             ->distinct()
             ->get();
         foreach ($rows as $row){
-            $result[$i]['parent_id']=$row->parent_id;
+            $result[$i]['id']=$row->id;
             $i++;
         }
         return $result;

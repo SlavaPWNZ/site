@@ -1,11 +1,9 @@
 jQuery(document).ready(function () {
-    jQuery("#jquery-accordion-menu").jqueryAccordionMenu();
     jQuery.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
         }
     });
-
     fetchUser();
 
     function fetchUser()
@@ -17,12 +15,15 @@ jQuery(document).ready(function () {
             data:{action:action},
             success:function(data){
                 $('#jquery-accordion-menu').html(data[0]);
+                jQuery("#jquery-accordion-menu").jqueryAccordionMenu();
                 $('#result').html(data[1]);
+                $('#parent_id').html(data[2]);
             }
         });
     }
 
-    $('#modal_button').click(function(){
+
+    $(document).on('click', '#modal_button',function(){
         $('#customerModal').modal('show');
         $('#title').val('');
         $('#path').val('');
@@ -32,7 +33,7 @@ jQuery(document).ready(function () {
     });
 
 
-    $('#action').click(function(){
+    $(document).on('click', '#action',function(){
         $('.alert-danger').html('');
         $('.alert-danger').css('display','none');
         var title = $('#title').val();
@@ -52,6 +53,9 @@ jQuery(document).ready(function () {
                             jQuery('.alert-danger').show();
                             jQuery('.alert-danger').append('<p>'+value+'</p>');
                         });
+                    }else if (data=='Вы ничего не изменили!'){
+                        jQuery('.alert-danger').show();
+                        jQuery('.alert-danger').append('<p>Вы ничего не изменили!</p>');
                     }else{
                         alert(data);
                         $('#customerModal').modal('hide');
@@ -68,6 +72,8 @@ jQuery(document).ready(function () {
 
 
     $(document).on('click', '.update', function(){
+        $('.alert-danger').html('');
+        $('.alert-danger').css('display','none');
         var id = $(this).attr("id");
         var action = "Select";
         $.ajax({

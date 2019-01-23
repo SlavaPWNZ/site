@@ -1,5 +1,9 @@
 <?php
-Route::resource('/', 'MenuController');
+Route::get('/', function () {
+    return view('main');
+});
 Route::resource('/pregtest', 'PregReplace');
 Route::post('/action', 'AjaxController@store');
-Route::any('{all}', 'MenuController@index');
+Route::any('{all}', function () {
+    return view('main');
+});

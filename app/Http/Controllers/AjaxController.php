@@ -7,10 +7,21 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 
 use App\Menu;
-use App\Http\Controllers\MenuController;
 
 class AjaxController extends Controller
 {
+    public $messages = [
+        'title.required'    => 'Укажите название',
+        'title.max'    => 'Название не должно быть более 255 символов',
+        'title.regex' => 'В названии разрешено использовать только цифры/латиницу/кириллицу/пробел',
+        'title.unique'      => 'Уже есть пункт меню, с таким названием',
+        'path.required'    => 'Укажите ссылку',
+        'path.max'    => 'Ссылку не должна быть более 255 символов',
+        'path.regex' => 'В ссылке разрешено использовать только цифры/латиницу/подчеркивание/дефис',
+        'path.unique'      => 'Уже есть пункт меню, с такой ссылкой',
+        'parent_id.required'    => 'Укажите id родителя',
+    ];
+
     public function build_tree($categories){
         if (isset($categories[0])){
             $tree = '<ul id="demo-list" type="circle">';
@@ -39,145 +50,106 @@ class AjaxController extends Controller
         return $tree;
     }
 
+    public function post_load()
+    {
+        $categories = Menu::makeMenu();
+        $menu_html=$this->build_tree($categories);
+
+        $result = Menu::getMenu();
+        $output=view('editor', ['result' => $result])->render();
+
+        $IDs=Menu::getIDs();
+        $select='<option>0</option>';
+        foreach ($IDs as $ID) {
+            $select .= '<option>' . $ID['id'] . '</option>';
+        }
+
+        $data[0]=$menu_html;
+        $data[1]=$output;
+        $data[2]=$select;
+        return $data;
+    }
+
+    public function post_create($request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'title' => 'bail|required|max:255|regex:/^[0-9a-zA-ZА-Яа-яЁё\s]+$/u|unique:menus,title|',
+            'path' => 'bail|required|max:255|regex:/^[0-9a-zA-Z_-]+$/|unique:menus,path',
+            'parent_id' => 'required',
+        ],$this->messages);
+        if ($validator->fails())
+        {
+            return response()->json(['errors'=>$validator->errors()->all()]);
+        }
+        $result = Menu::saveRowMenu($_POST["title"],$_POST["path"],$_POST["parent_id"]);
+        if(!empty($result))
+        {
+            echo 'Данные успешно записаны';
+        }
+        else{
+            echo 'Ошибка!';
+        }
+    }
+
+    public function post_select()
+    {
+        $result = Menu::getRowMenu($_POST["id"]);
+        foreach($result as $row)
+        {
+            $output["title"] = $row["title"];
+            $output["path"] = $row["path"];
+            $output["parent_id"] = $row["parent_id"];
+        }
+        echo json_encode($output);
+    }
+
+    public function post_update($request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'title' => 'bail|required|max:255|regex:/^[0-9a-zA-ZА-Яа-яЁё\s]+$/|',
+            'path' => 'bail|required|max:255|regex:/^[0-9a-zA-Z_-]+$/',
+            'parent_id' => 'required',
+        ],$this->messages);
+        if ($validator->fails())
+        {
+            return response()->json(['errors'=>$validator->errors()->all()]);
+        }
+        $result = Menu::updateRowMenu($_POST["id"],$_POST["title"],$_POST["path"],$_POST["parent_id"]);
+        if(!empty($result))
+        {
+            echo 'Данные успешно обновлены';
+        }
+        else{
+            echo 'Вы ничего не изменили!';
+        }
+    }
+
+    public function post_delete()
+    {
+        if ($_POST["id"]==1 || $_POST["id"]==12){
+            echo 'Не стоит удалять главную страницу и страницу первого задания... =)';
+        }
+        else{
+            $result = Menu::deleteRow($_POST["id"]);
+            if(!empty($result))
+            {
+                echo 'Данные удалены';
+            }
+            else{
+                echo 'Ошибка!';
+            }
+        }
+    }
+
     public function store(Request $request)
     {
-        $messages = [
-            'title.required'    => 'Укажите название',
-            'title.max'    => 'Название не должно быть более 255 символов',
-            'title.regex' => 'В названии разрешено использовать только цифры/латиницу/кириллицу/пробел',
-            'title.unique'      => 'Уже есть пункт меню, с таким названием',
-            'path.required'    => 'Укажите ссылку',
-            'path.max'    => 'Ссылку не должна быть более 255 символов',
-            'path.regex' => 'В ссылке разрешено использовать только цифры/латиницу/подчеркивание/дефис',
-            'path.unique'      => 'Уже есть пункт меню, с такой ссылкой',
-            'parent_id.required'    => 'Укажите id родителя',
-        ];
-
         if(isset($_POST["action"]))
         {
-            if($_POST["action"] == "Load")
-            {
-                $categories = Menu::makeMenu();
-                $menu_html=$this->build_tree($categories);
-
-                $result = Menu::getMenu();
-                $output = '';
-                $output .= '<div class="container box">
-                            <h1 align="center">Меню</h1>
-                            <br />
-                            <div align="right">
-                                <button type="button" id="modal_button" class="btn btn-info">Создать пункт меню</button>
-                            </div>
-                            <br />
-                            <div id="result" class="table-responsive">';
-
-                if(count($result))
-                {
-                    $output .= '
-                       <table class="table table-bordered">
-                        <tr>
-                         <th>ID</th>
-                         <th>Название</th>
-                         <th>Адрес</th>
-                         <th>ID родителя</th>
-                         <th>Обновить</th>
-                         <th>Удалить</th>
-                        </tr>
-                      ';
-                        foreach($result as $row)
-                        {
-                            $output .= '
-                                <tr>
-                                 <td>'.$row["id"].'</td>
-                                 <td>'.$row["title"].'</td>
-                                 <td>'.$row["path"].'</td>
-                                 <td>'.$row["parent_id"].'</td>
-                                 <td><button type="button" id="'.$row["id"].'" class="btn btn-warning btn-xs update">Обновить</button></td>
-                                 <td><button type="button" id="'.$row["id"].'" class="btn btn-danger btn-xs delete">Удалить</button></td>
-                                </tr>
-                                ';
-                        }
-                    $output .= '</table>';
-                }
-                else
-                {
-                    $output= '<h3>Данных нет</h3>';
-                }
-
-                $output .='</div></div>';
-
-                $data[0]=$menu_html;
-                $data[1]=$output;
-                return $data;
-            }
-            if($_POST["action"] == "Создать")
-            {
-                $validator = \Validator::make($request->all(), [
-                    'title' => 'bail|required|max:255|regex:/^[0-9a-zA-ZА-Яа-яЁё\s]+$/u|unique:menus,title|',
-                    'path' => 'bail|required|max:255|regex:/^[0-9a-zA-Z_-]+$/|unique:menus,path',
-                    'parent_id' => 'required',
-                ],$messages);
-                if ($validator->fails())
-                {
-                    return response()->json(['errors'=>$validator->errors()->all()]);
-                }
-                $result = Menu::saveRowMenu($_POST["title"],$_POST["path"],$_POST["parent_id"]);
-                if(!empty($result))
-                {
-                    echo 'Данные успешно записаны';
-                }
-                else{
-                    echo 'Ошибка!';
-                }
-            }
-            if($_POST["action"] == "Select")
-            {
-                $result = Menu::getRowMenu($_POST["id"]);
-                foreach($result as $row)
-                {
-                    $output["title"] = $row["title"];
-                    $output["path"] = $row["path"];
-                    $output["parent_id"] = $row["parent_id"];
-                }
-                echo json_encode($output);
-            }
-            if($_POST["action"] == "Обновить")
-            {
-                $validator = \Validator::make($request->all(), [
-                    'title' => 'bail|required|max:255|regex:/^[0-9a-zA-ZА-Яа-яЁё\s]+$/|unique:menus,title|',
-                    'path' => 'bail|required|max:255|regex:/^[0-9a-zA-Z_-]+$/|unique:menus,path',
-                    'parent_id' => 'required',
-                ],$messages);
-                if ($validator->fails())
-                {
-                    return response()->json(['errors'=>$validator->errors()->all()]);
-                }
-                $result = Menu::updateRowMenu($_POST["id"],$_POST["title"],$_POST["path"],$_POST["parent_id"]);
-                if(!empty($result))
-                {
-                    echo 'Данные успешно обновлены';
-                }
-                else{
-                    echo 'Ошибка!';
-                }
-            }
-            if($_POST["action"] == "Delete")
-            {
-                if ($_POST["id"]==1 || $_POST["id"]==12){
-                    echo 'Не стоит удалять главную страницу и страницу первого задания... =)';
-                }
-                else{
-                    $result = Menu::deleteRow($_POST["id"]);
-                    if(!empty($result))
-                    {
-                        echo 'Данные удалены';
-                    }
-                    else{
-                        echo 'Ошибка!';
-                    }
-                }
-
-            }
+            if($_POST["action"] == "Load") return $this->post_load();
+            elseif($_POST["action"] == "Создать") return $this->post_create($request);
+            elseif($_POST["action"] == "Select") return $this->post_select();
+            elseif($_POST["action"] == "Обновить") return $this->post_update($request);
+            elseif($_POST["action"] == "Delete") return $this->post_delete();
         }
     }
 }
