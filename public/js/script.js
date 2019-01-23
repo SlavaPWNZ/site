@@ -9,14 +9,15 @@ jQuery(document).ready(function () {
     function fetchUser()
     {
         var action = "Load";
+        var uri = window.location.pathname;
         $.ajax({
             url : "/action",
             method:"POST",
-            data:{action:action},
+            data:{action:action, uri:uri},
             success:function(data){
                 $('#jquery-accordion-menu').html(data[0]);
                 jQuery("#jquery-accordion-menu").jqueryAccordionMenu();
-                $('#result').html(data[1]);
+                $('#editor').html(data[1]);
                 $('#parent_id').html(data[2]);
             }
         });

@@ -56,7 +56,10 @@ class AjaxController extends Controller
         $menu_html=$this->build_tree($categories);
 
         $result = Menu::getMenu();
-        $output=view('editor', ['result' => $result])->render();
+        $uri=substr($_POST["uri"],1);
+        if ( $uri == '') $uri = '/';
+        $title_editor=Menu::getTitleEditor($uri);
+        $output=view('editor', ['result' => $result, 'title_editor' => $title_editor])->render();
 
         $IDs=Menu::getIDs();
         $select='<option>0</option>';
@@ -120,7 +123,7 @@ class AjaxController extends Controller
             echo 'Данные успешно обновлены';
         }
         else{
-            echo 'Вы ничего не изменили!';
+            echo 'Вы ничего не изменили, либо указали уже занятые название/ссылку';
         }
     }
 

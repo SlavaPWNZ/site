@@ -7,13 +7,13 @@
                     <h4 class="modal-title">Создать пункт меню</h4>
                 </div>
                 <div class="modal-body">
-                    <label>Введите название</label>
+                    <label>Введите название:</label>
                     <input type="text" name="title" id="title" class="form-control"/>
                     <br />
-                    <label>Введите ссылку</label>
+                    <label>Введите ссылку:</label>
                     <input type="text" name="path" id="path" class="form-control"/>
                     <br />
-                    <label>Введите id родителя</label>
+                    <label>Введите ID родителя:</label>
                     <select name="parent_id" id="parent_id" class="form-control" required></select>
                     <br />
                 </div>

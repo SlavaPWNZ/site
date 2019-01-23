@@ -95,5 +95,13 @@ class Menu extends Model
         return true;
     }
 
-
+    public static function getTitleEditor($path){
+        $result='';
+        $rows= Menu::where('path', $path)
+            ->get();
+        foreach ($rows as $row){
+            $result=$row->title;
+        }
+        return $result;
+    }
 }

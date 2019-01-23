@@ -1,5 +1,5 @@
 <div class="container box">
-    <h1 align="center">Меню</h1>
+    <h1 align="center">Текущая страница -> {{$title_editor}}</h1>
     <br/>
     <div align="right">
         <button type="button" id="modal_button" class="btn btn-info">Создать пункт меню</button>
