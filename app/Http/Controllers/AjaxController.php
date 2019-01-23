@@ -56,8 +56,7 @@ class AjaxController extends Controller
         $menu_html=$this->build_tree($categories);
 
         $result = Menu::getMenu();
-        $uri=substr($_POST["uri"],1);
-        if ( $uri == '') $uri = '/';
+        $uri = ($_POST["uri"] == '/') ? '/' : substr($_POST["uri"],1);
         $title_editor=Menu::getTitleEditor($uri);
         $output=view('editor', ['result' => $result, 'title_editor' => $title_editor])->render();
 

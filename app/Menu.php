@@ -74,8 +74,12 @@ class Menu extends Model
     }
 
     public static function updateRowMenu($id,$title, $path, $parent_id){
-        $result= Menu::where('id', $id)
-            ->update(['title' => $title, 'path' => $path, 'parent_id' => $parent_id]);
+        try {
+            $result= Menu::where('id', $id)
+                ->update(['title' => $title, 'path' => $path, 'parent_id' => $parent_id]);
+        } catch(\Illuminate\Database\QueryException $ex){
+            $result=[];
+        }
         return $result;
     }
 
