@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-@extends('header')
+@include('header')
 </head>
 <body>
         <div class="container">
@@ -13,6 +13,6 @@
         </div>
         <div id="result"></div>
 </body>
-@extends('modal')
-@extends('footer')
+@include('modal')
+@include('footer')
 </html>
