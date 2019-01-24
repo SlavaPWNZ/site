@@ -8,8 +8,7 @@ Vendco Laravel Project by SlavaPWNZ
 4) установить и создать базу данных MySQL
 5) создать файл .env в корне проекта. Скопировать туда код из .env.example и
 поменить данные на нужные... (APP_URL, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD)
-4) php artisan migrate:refresh --seed
+6) php artisan migrate:refresh --seed
+7) изменить файл hosts, прописать ip и домен
 
-P.S Возможно понадобится sudo
-
-Первое задание по PHP, находится по адресу ..../pregtest
+Первое задание по PHP, находится по адресу http://localhost/pregtest
